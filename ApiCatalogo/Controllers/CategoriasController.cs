@@ -20,73 +20,116 @@ namespace APICatalogo.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Categoria>> Get()
         {
-            var categorias = _context.Categorias;
-
-            if(categorias is null)
+            try
             {
-                return NotFound("Categorias Não encontradas");
+                var categorias = _context.Categorias.AsNoTracking().ToList();
+
+                if (categorias is null)
+                {
+                    return NotFound("Categorias Não encontradas");
+                }
+                return Ok(categorias);
             }
-            return Ok(categorias);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
+            }
         }
 
         [HttpGet("produtos")]
         public ActionResult<IEnumerable<Categoria>> GetCategoriasProdutos()
         {
-            var categorias = _context.Categorias.Include(p => p.Produtos).ToList();
-
-            if(categorias is null)
+            try
             {
-                return NotFound("Categorias Não encontradas");
+                var categorias = _context.Categorias.Include(p => p.Produtos).ToList();
+
+                if (categorias is null)
+                {
+                    return NotFound("Categorias Não encontradas");
+                }
+                return Ok(categorias);
             }
-            return Ok(categorias);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
+            }
+            
         }
 
         [HttpGet("{id:int}", Name = "ObterCategoria")]
         public ActionResult<Categoria> Get(int id)
         {
-            Categoria categoria = _context.Categorias.FirstOrDefault(c => c.CategoriaId == id);
-
-            if(categoria is null)
+            try
             {
-                return NotFound("Categoria Não Encontrada");
+                Categoria categoria = _context.Categorias.FirstOrDefault(c => c.CategoriaId == id);
+
+                if (categoria is null)
+                {
+                    return NotFound("Categoria Não Encontrada");
+                }
+                return Ok(categoria);
             }
-            return Ok(categoria);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
+            }
         }
 
         [HttpPost]
         public ActionResult<Categoria> Post(Categoria categoria)
         {
-            if(categoria is null)
+            try
             {
-                return BadRequest("Categoria esta vazio");
+                if (categoria is null)
+                {
+                    return BadRequest("Categoria esta vazio");
+                }
+                _context.Add(categoria);
+                _context.SaveChanges();
+                return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoria);
             }
-            _context.Add(categoria);
-            _context.SaveChanges();
-            return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId}, categoria);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
+            }
         }
 
         [HttpPut]
         public ActionResult Put(Categoria categoria)
         {
-            if (categoria is null)
+            try
             {
-                return BadRequest("Categoria esta vazio");
+                if (categoria is null)
+                {
+                    return BadRequest("Categoria esta vazio");
+                }
+                _context.Entry(categoria).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                _context.SaveChanges();
+                return Ok(categoria);
             }
-            _context.Entry(categoria).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            _context.SaveChanges();
-            return Ok(categoria);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
+            }
         }
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            Categoria categoria = _context.Categorias.FirstOrDefault(c => c.CategoriaId == id);
-            if(categoria is null)
+            try
             {
-                return NotFound("Categoria não Encontrada");
+                Categoria categoria = _context.Categorias.FirstOrDefault(c => c.CategoriaId == id);
+                if (categoria is null)
+                {
+                    return NotFound("Categoria não Encontrada");
+                }
+                _context.Remove(categoria);
+                _context.SaveChanges();
+                return Ok();
             }
-            _context.Remove(categoria);
-            _context.SaveChanges();
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
+            }
         }
     }
 }

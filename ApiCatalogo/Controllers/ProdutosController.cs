@@ -19,72 +19,118 @@ namespace APICatalogo.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Produto>> Get()
         {
-            var produtos = _context.Produtos.ToList();
+            
+            try
+            {
+                var produtos = _context.Produtos.ToList();
 
-            if(produtos is null)
-            {
-                return NotFound("Produtos não encontrados");
+                if (produtos is null)
+                {
+                    return NotFound("Produtos não encontrados");
+                }
+                else
+                {
+                    return produtos;
+                }
             }
-            else
+            catch (Exception)
             {
-                return produtos;
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
             }
         }
 
         [HttpGet("{id:int}", Name = "ObterProduto")]
         public ActionResult<Produto> Get(int id)
         {
-            var produto = _context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
 
-            if (produto is null)
+            try
             {
-                return NotFound("Produto não encontrados");
+                var produto = _context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
+                if (produto is null)
+                {
+                    return NotFound("Produto não encontrados");
+                }
+                else
+                {
+                    return produto;
+                }
             }
-            else
+            catch (Exception)
             {
-                return produto;
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
             }
         }
 
         [HttpPost]
         public ActionResult Post(Produto produto)
         {
-            if(produto is null)
+           
+            try
             {
-                return BadRequest("Produto esta vazio");
+                if (produto is null)
+                {
+                    return BadRequest("Produto esta vazio");
+                }
+                produto.DataCadastro = DateTime.Now;
+                _context.Add(produto);
+                _context.SaveChanges();
+                return new CreatedAtRouteResult("ObterProduto", new { id = produto.ProdutoId }, produto);
             }
-            _context.Add(produto);
-            _context.SaveChanges();
-            return new CreatedAtRouteResult("ObterProduto", new {id = produto.ProdutoId}, produto);
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
+            }
         }
 
         [HttpPut]
         public ActionResult Put(Produto produto)
         {
-            if (produto is null)
-            {
-                return BadRequest("Produto esta vazio");
-            }
-            _context.Entry(produto).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            _context.SaveChanges();
+            
 
-            return Ok(produto);
+            try
+            {
+                if (produto is null)
+                {
+                    return BadRequest("Produto esta vazio");
+                }
+                _context.Entry(produto).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                _context.SaveChanges();
+
+                return Ok(produto);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
+            }
 
         }
 
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var produto = _context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
 
-            if(produto is null)
+            try
             {
-                return NotFound("Produto não Encontrado");
-            }
-            _context.Produtos.Remove(produto);
-            _context.SaveChanges();
+                var produto = _context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
 
-            return Ok();
+                if (produto is null)
+                {
+                    return NotFound("Produto não Encontrado");
+                }
+                _context.Produtos.Remove(produto);
+                _context.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Erro interno no servidor. Não foi possivel realizar a solicitação");
+            }
 
         }
     }
